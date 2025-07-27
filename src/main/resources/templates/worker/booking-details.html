@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Детали бронирования</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-light">
+
+<div class="container py-5">
+    <!-- Заголовок -->
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">Детали бронирования <span th:text="'#' + ${booking.id}"></span></h2>
+        <p class="text-muted">Полная информация о бронировании, клиенте и комнате</p>
+    </div>
+
+    <!-- КНОПКА НАЗАД -->
+    <div class="mb-4">
+        <a th:href="@{/hotel-panel/bookings/{hotelId}(hotelId=${booking.room.hotel.id})}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Назад к списку бронирований
+        </a>
+        <a th:href="@{/worker/booking-chart/{hotelId}(hotelId=${hotel.id})}" class="btn btn-success">
+            ♟️ Шахматка
+        </a>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i><span th:text="${error}">Ошибка</span>
+    </div>
+    <div th:if="${message}" class="alert alert-success" role="alert">
+        <i class="fas fa-check-circle me-2"></i><span th:text="${message}">Успешно</span>
+    </div>
+
+    <div class="row g-4">
+        <!-- Колонка с информацией о бронировании и комнате -->
+        <div class="col-lg-7">
+            <!-- Детали бронирования -->
+            <div class="card shadow-sm mb-4 rounded-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="fas fa-book me-2"></i>Информация о бронировании</h4>
+                    <span class="badge bg-light text-primary" th:text="${booking.status}">СТАТУС</span>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered table-hover">
+                        <tbody>
+                        <tr><th>ID бронирования</th><td th:text="${booking.id}"></td></tr>
+                        <tr><th>Отель</th><td th:text="${booking.hotel}"></td></tr>
+                        <tr><th>Номер комнаты</th><td th:text="${booking.roomNumber}"></td></tr>
+                        <tr><th>Даты проживания</th>
+                            <td th:text="${#temporals.format(booking.checkInDate, 'dd.MM.yyyy')} + ' — ' + ${#temporals.format(booking.checkOutDate, 'dd.MM.yyyy')}"></td></tr>
+                        <tr><th>Оплаченная сумма</th><td class="fw-bold" th:text="${#numbers.formatDecimal(booking.totalAmount, 1, 'COMMA', 2, 'POINT')} + ' сом'"></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Информация о комнате -->
+            <div class="card shadow-sm rounded-4">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="fas fa-door-open me-2"></i>Информация о комнате</h4>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Тип комнаты</dt>
+                        <dd class="col-sm-8" th:text="${booking.room.roomType}">Стандарт</dd>
+
+                        <dt class="col-sm-4">Количество кроватей</dt>
+                        <dd class="col-sm-8" th:text="${booking.room.bedCount}">2</dd>
+
+                        <dt class="col-sm-4">Цена за ночь</dt>
+                        <dd class="col-sm-8" th:text="${#numbers.formatDecimal(booking.room.pricePerNight, 1, 'COMMA', 2, 'POINT')} + ' сом'">2000 сом</dd>
+                        <dt class="col-sm-4">Полная стоимость</dt>
+                        <dd class="col-sm-8"
+                            th:text="${#numbers.formatDecimal((booking.room.pricePerNight * T(java.time.temporal.ChronoUnit).DAYS.between(booking.checkInDate, booking.checkOutDate)), 1, 'COMMA', 2, 'POINT')} + ' сом'">
+                            0 сом
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!--
+            ================================================================
+            ИЗМЕНЕНИЕ ЗДЕСЬ:
+            Колонка с информацией о клиенте будет показана только если
+            booking.user не является null.
+            ================================================================
+        -->
+        <div class="col-lg-5" th:if="${booking.user != null}">
+            <div class="card shadow-sm rounded-4">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="fas fa-user-circle me-2"></i>Информация о клиенте</h4>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">ФИО</dt>
+                        <dd class="col-sm-8" th:text="${booking.user.firstName + ' ' + booking.user.lastName}">Имя клиента</dd>
+
+                        <dt class="col-sm-4">Email</dt>
+                        <dd class="col-sm-8"><a th:href="'mailto:' + ${booking.user.email}" th:text="${booking.user.email}"></a></dd>
+
+                        <dt class="col-sm-4">Телефон</dt>
+                        <dd class="col-sm-8"><a th:href="'tel:' + ${booking.user.phone}" th:text="${booking.user.phone}"></a></dd>
+
+                        <dt class="col-sm-4">Паспорт</dt>
+                        <dd class="col-sm-8" th:text="${booking.passportNumber}">Данные паспорта</dd>
+
+                        <dt class="col-sm-4">Дата рождения</dt>
+                        <dd class="col-sm-8" th:text="${#temporals.format(booking.user.birthday, 'dd.MM.yyyy')}">2000-01-01</dd>
+
+                        <dt class="col-sm-4">Адрес</dt>
+                        <dd class="col-sm-8" th:text="${booking.user.address}">г. Бишкек...</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br>
+<div class="container py-5">
+    <form th:action="@{/hotel-panel/booking/update}" method="post" class="mt-4">
+        <input type="hidden" name="bookingId" th:value="${booking.id}" />
+
+        <!-- Выбор новой комнаты -->
+        <div class="mb-3">
+            <label for="newRoomNumber" class="form-label">Номер комнаты</label>
+            <select class="form-select" name="newRoomNumber" required>
+                <option th:each="room : ${rooms}" th:value="${room.roomNumber}"
+                        th:text="${room.roomNumber + ' - ' + room.roomType}"
+                        th:selected="${room.roomNumber == booking.room.roomNumber}"></option>
+            </select>
+        </div>
+
+        <!-- Изменение суммы оплаты -->
+        <div class="mb-3">
+            <label for="newAmount" class="form-label">Оплаченная сумма</label>
+            <input type="number" step="0.01" class="form-control" name="newAmount"
+                   th:value="${booking.totalAmount}" required />
+        </div>
+
+        <button type="submit" class="btn btn-success">Сохранить изменения</button>
+    </form>
+</div>
+</body>
+</html>

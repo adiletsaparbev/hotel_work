@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Название страницы теперь динамическое -->
+    <title th:text="${room.roomType} + ' - ' + ${room.hotel.number}">Детали комнаты</title>
+
+    <!-- Стили Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Иконки Font Awesome для красоты -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .main-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+        .carousel-item img {
+            height: 500px;
+            object-fit: cover;
+            border-radius: 15px;
+        }
+        .details-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.07);
+            padding: 2rem;
+        }
+        .price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #0d6efd;
+        }
+        .amenity-badge {
+            margin-right: 8px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            padding: 0.5em 0.9em;
+        }
+        .nav-tabs .nav-link {
+            color: #6c757d;
+        }
+        .nav-tabs .nav-link.active {
+            color: #0d6efd;
+            border-color: #dee2e6 #dee2e6 #fff;
+        }
+        .booking-form {
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 1.5rem;
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+<header th:insert="blocks/header :: header"></header>
+
+<div class="container main-container">
+    <div class="row g-5">
+        <!-- ЛЕВАЯ КОЛОНКА: ГАЛЕРЕЯ ИЗОБРАЖЕНИЙ -->
+        <div class="col-lg-7">
+            <div id="roomImageCarousel" class="carousel slide shadow-sm" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <!-- th:each сгенерирует слайды для каждого изображения -->
+                    <div th:each="img, iterStat : ${room.images}"
+                         th:classappend="${iterStat.index == 0} ? 'active' : ''"
+                         class="carousel-item">
+                        <img th:src="@{/images/{id}(id=${img.id})}" class="d-block w-100" alt="Изображение комнаты">
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#roomImageCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#roomImageCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ПРАВАЯ КОЛОНКА: ДЕТАЛИ И ФОРМА БРОНИРОВАНИЯ -->
+        <div class="col-lg-5">
+            <div class="details-card">
+                <!-- Заголовок -->
+                <h2 th:text="${room.roomType}">Тип комнаты</h2>
+                <p class="text-muted mb-3">в отеле <strong th:text="${room.hotel.number}">Название отеля</strong></p>
+
+                <!-- Цена и доступность -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="price">
+                        <span th:text="${room.pricePerNight}">00</span>$ <span class="fs-6 text-muted fw-normal">/ ночь</span>
+                    </div>
+                    <div th:if="${room.availability}" class="badge bg-success-subtle text-success-emphasis p-2">
+                        <i class="fas fa-check-circle me-1"></i> Свободно
+                    </div>
+                    <div th:unless="${room.availability}" class="badge bg-danger-subtle text-danger-emphasis p-2">
+                        <i class="fas fa-times-circle me-1"></i> Занято
+                    </div>
+                </div>
+
+                <!-- БЛОК С КНОПКОЙ БРОНИРОВАНИЯ -->
+                <div class="d-grid gap-2" th:if="${room.availability}">
+                    <!-- Эта кнопка-ссылка перенаправит пользователя на страницу бронирования -->
+                    <a th:href="@{/book/add-booking/{roomId}(roomId=${room.roomId})}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-calendar-check me-2"></i>Забронировать
+                    </a>
+                </div>
+                <!-- Сообщение, если комната недоступна -->
+                <div th:unless="${room.availability}" class="alert alert-warning mt-4">
+                    К сожалению, эта комната сейчас недоступна для бронирования.
+                </div>
+
+                <!-- ВКЛАДКИ С ПОДРОБНОЙ ИНФОРМАЦИЕЙ -->
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description-pane" type="button" role="tab">Описание</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="hotel-tab" data-bs-toggle="tab" data-bs-target="#hotel-pane" type="button" role="tab">Об отеле</button>
+                    </li>
+                </ul>
+                <div class="tab-content pt-3" id="myTabContent">
+                    <!-- Вкладка: Описание комнаты -->
+                    <div class="tab-pane fade show active" id="description-pane" role="tabpanel">
+                        <p th:text="${room.description}">Описание комнаты...</p>
+                        <hr>
+                        <h6><i class="fas fa-star me-2"></i>Удобства:</h6>
+                        <div>
+                            <span th:each="amenity : ${room.amenities}"
+                                  class="badge rounded-pill text-bg-light amenity-badge"
+                                  th:text="${amenity.name}">
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Вкладка: Об отеле (С ИСПРАВЛЕНИЕМ ОШИБКИ) -->
+                    <div class="tab-pane fade" id="hotel-pane" role="tabpanel">
+                        <p><strong><i class="fas fa-map-marker-alt me-2"></i>Адрес:</strong>
+                            <!-- ИСПРАВЛЕНО: Безопасный доступ к городу -->
+                            <span th:text="${room.hotel.address}"></span>
+                            <span th:if="${room.hotel.city}" th:text="', ' + ${room.hotel.city?.name}"></span>
+                        </p>
+                        <p><strong><i class="fas fa-chart-line me-2"></i>Рейтинг:</strong> <span th:text="${room.hotel.hotelRank}"></span></p>
+                        <p th:text="${room.hotel.description}">Описание отеля...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Скрипты Bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

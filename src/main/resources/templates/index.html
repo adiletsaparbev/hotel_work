@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каскадный Фильтр</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        select:disabled {
+            background-color: #e9e9e9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Фильтр по Стране и Городу</h2>
+
+    <div>
+        <label for="country-select">Выберите страну:</label>
+        <select id="country-select" name="country">
+            <option value="">-- Сначала выберите страну --</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="city-select">Выберите город:</label>
+        <select id="city-select" name="city" disabled>
+            <option value="">-- Сначала выберите страну --</option>
+        </select>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const countrySelect = document.getElementById('country-select');
+        const citySelect = document.getElementById('city-select');
+
+        // 1. Загрузка стран при загрузке страницы
+        fetch('/api/countries')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(countries => {
+                countries.forEach(country => {
+                    const option = document.createElement('option');
+                    option.value = country.id;
+                    option.textContent = country.name;
+                    countrySelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Ошибка при загрузке стран:', error);
+                countrySelect.innerHTML = '<option value="">Не удалось загрузить страны</option>';
+            });
+
+        // 2. Обработчик изменения выбора страны
+        countrySelect.addEventListener('change', function() {
+            const selectedCountryId = this.value;
+            citySelect.innerHTML = '<option value="">-- Загрузка городов... --</option>'; // Очистка и сообщение о загрузке
+            citySelect.disabled = true;
+
+            if (selectedCountryId) {
+                fetch(`/api/countries/${selectedCountryId}/cities`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok ' + response.statusText);
+                        }
+                        return response.json();
+                    })
+                    .then(cities => {
+                        citySelect.innerHTML = '<option value="">-- Выберите город --</option>'; // Сброс перед заполнением
+                        if (cities.length > 0) {
+                            cities.forEach(city => {
+                                const option = document.createElement('option');
+                                option.value = city.id;
+                                option.textContent = city.name;
+                                citySelect.appendChild(option);
+                            });
+                            citySelect.disabled = false;
+                        } else {
+                            citySelect.innerHTML = '<option value="">-- Городов не найдено --</option>';
+                            citySelect.disabled = true;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при загрузке городов:', error);
+                        citySelect.innerHTML = '<option value="">Не удалось загрузить города</option>';
+                        citySelect.disabled = true;
+                    });
+            } else {
+                citySelect.innerHTML = '<option value="">-- Сначала выберите страну --</option>';
+                citySelect.disabled = true;
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

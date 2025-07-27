@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Новое бронирование</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Дополнительный стиль для наглядности */
+        .price-display {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        #price-per-night-display { color: #0d6efd; }
+        #total-price-display { color: #198754; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h2 class="mb-0">Создание нового бронирования</h2>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/hotel-panel/save/{hotelId}(hotelId=${hotelId})}" th:object="${booking}" method="post">
+
+                        <!-- Выбор номера -->
+                        <div class="mb-3">
+                            <label for="room" class="form-label">Номер (Комната)</label>
+                            <select id="room" name="roomId" class="form-select" required>
+                                <option value="" data-price-per-night="0">-- Выберите номер --</option>
+                                <!-- ===== ИЗМЕНЕНИЕ ЗДЕСЬ: Добавлен атрибут data-price-per-night ===== -->
+                                <option th:each="room : ${rooms}"
+                                        th:value="${room.roomId}"
+                                        th:text="${room.roomNumber + ' (' + room.roomType + ', ' + room.bedCount + ' кр.)'}"
+                                        th:data-price-per-night="${room.pricePerNight}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <hr>
+                        <h4 class="mt-4 mb-3">Данные гостя</h4>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="firstName" class="form-label">Имя</label>
+                                <input type="text" class="form-control" id="firstName" th:field="*{firstName}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="lastName" class="form-label">Фамилия</label>
+                                <input type="text" class="form-control" id="lastName" th:field="*{lastName}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="passportNumber" class="form-label">Номер паспорта</label>
+                            <input type="text" class="form-control" id="passportNumber" th:field="*{passportNumber}">
+                        </div>
+
+                        <hr>
+                        <h4 class="mt-4 mb-3">Даты и оплата</h4>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="checkInDate" class="form-label">Дата заезда</label>
+                                <input type="date" class="form-control" id="checkInDate" th:field="*{checkInDate}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="checkOutDate" class="form-label">Дата выезда</label>
+                                <input type="date" class="form-control" id="checkOutDate" th:field="*{checkOutDate}" required>
+                            </div>
+                        </div>
+
+                        <!-- ===== НОВЫЕ БЛОКИ ДЛЯ ОТОБРАЖЕНИЯ ЦЕН ===== -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Цена за ночь:</label>
+                                <div class="price-display" id="price-per-night-display">0.00 сом</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Итоговая стоимость:</label>
+                                <div class="price-display" id="total-price-display">0.00 сом</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="totalAmount" class="form-label">Сумма к оплате</label>
+                                <input type="number" step="0.01" class="form-control" id="totalAmount" th:field="*{totalAmount}" required>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a th:href="@{/worker/booking-chart/{hotelId}(hotelId=${hotelId})}" class="btn btn-secondary">Отмена</a>
+                            <button type="submit" class="btn btn-primary">Сохранить бронирование</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- ===== JAVASCRIPT ДЛЯ РАСЧЕТОВ ===== -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Получаем ссылки на элементы DOM
+        const roomSelect = document.getElementById('room');
+        const checkInDateInput = document.getElementById('checkInDate');
+        const checkOutDateInput = document.getElementById('checkOutDate');
+        const totalAmountInput = document.getElementById('totalAmount');
+        const pricePerNightDisplay = document.getElementById('price-per-night-display');
+        const totalPriceDisplay = document.getElementById('total-price-display');
+
+        // Функция для обновления всех цен
+        function updatePrices() {
+            // 1. Получаем цену за ночь из выбранной комнаты
+            const selectedOption = roomSelect.options[roomSelect.selectedIndex];
+            const pricePerNight = parseFloat(selectedOption.getAttribute('data-price-per-night')) || 0;
+
+            // Отображаем цену за ночь
+            pricePerNightDisplay.textContent = pricePerNight.toFixed(2) + ' сом';
+
+            // 2. Получаем даты
+            const checkInDate = new Date(checkInDateInput.value);
+            const checkOutDate = new Date(checkOutDateInput.value);
+
+            let numberOfNights = 0;
+            // 3. Рассчитываем количество ночей (только если обе даты выбраны и дата выезда > даты заезда)
+            if (checkInDateInput.value && checkOutDateInput.value && checkOutDate > checkInDate) {
+                const timeDiff = checkOutDate.getTime() - checkInDate.getTime();
+                numberOfNights = Math.ceil(timeDiff / (1000 * 3600 * 24)); // Округляем вверх
+            }
+
+            // 4. Рассчитываем итоговую стоимость
+            const totalPrice = pricePerNight * numberOfNights;
+
+            // 5. Обновляем поле "Сумма к оплате" и дисплей итоговой стоимости
+            totalPriceDisplay.textContent = totalPrice.toFixed(2) + ' сом';
+            totalAmountInput.value = totalPrice.toFixed(2);
+        }
+
+        // Добавляем слушатели событий на все три поля
+        roomSelect.addEventListener('change', updatePrices);
+        checkInDateInput.addEventListener('change', updatePrices);
+        checkOutDateInput.addEventListener('change', updatePrices);
+
+        // Вызываем функцию один раз при загрузке страницы на случай, если форма уже заполнена
+        updatePrices();
+    });
+</script>
+
+</body>
+</html>

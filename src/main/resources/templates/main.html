@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rooms List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body { background-color: #f9f9f9; }
+        h1, h5 { color: #003366; }
+        .btn-primary { background-color: #003366; border-color: #003366; }
+        .btn-primary:hover { background-color: #00509e; border-color: #00509e; }
+        .filter-container { background-color: #ffffff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
+        .card.room-card { border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color: #ffffff; }
+        .card.room-card .card-body { background-color: #f1f1f1; }
+        .card.room-card h5 { color: #cc0000; }
+        .room-amenities { font-size: 0.9rem; color: #666; }
+        .room-card img { height: 200px; object-fit: cover; border-radius: 10px 10px 0 0; }
+        footer { background-color: #003366; color: #ffffff; padding: 10px 0; text-align: center; margin-top: 20px; }
+    </style>
+</head>
+<body class="bg-light">
+<header th:insert="~{blocks/header :: header}"></header>
+
+<div class="container my-4">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="filter-container">
+                <h5>Фильтр</h5>
+                <form id="filterForm" method="post" th:action="@{/}">
+                    <div class="mb-3">
+                        <label for="country" class="form-label">Страна:</label>
+                        <select class="form-select" id="country" name="countryId">
+                            <option value="">Выберите страну</option>
+                            <option th:each="country : ${countries}"
+                                    th:value="${country.id}"
+                                    th:text="${country.name}"
+                                    th:selected="${country.id == selectedCountryId}"></option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="city" class="form-label">Город:</label>
+                        <select class="form-select" id="city" name="cityId" required>
+                            <option value="">Сначала выберите страну</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="minPrice" class="form-label">Мин. цена:</label>
+                        <input type="number" class="form-control" id="minPrice" name="minPrice" placeholder="От" th:value="${minPrice}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="maxPrice" class="form-label">Макс. цена:</label>
+                        <input type="number" class="form-control" id="maxPrice" name="maxPrice" placeholder="До" th:value="${maxPrice}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="bedCount" class="form-label">Количество кроватей:</label>
+                        <select class="form-select" id="bedCount" name="bedCount">
+                            <option value="">Любое</option>
+                            <option value="1" th:selected="${selectedBedCount != null and selectedBedCount == 1}">1</option>
+                            <option value="2" th:selected="${selectedBedCount != null and selectedBedCount == 2}">2</option>
+                            <option value="3" th:selected="${selectedBedCount != null and selectedBedCount == 3}">3</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Тип номера:</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">Любой</option>
+                            <option value="стандарт" th:selected="${selectedStatus == 'стандарт'}">Стандарт</option>
+                            <option value="люкс" th:selected="${selectedStatus == 'люкс'}">Люкс</option>
+                            <option value="эконом" th:selected="${selectedStatus == 'эконом'}">Эконом</option>
+                            <option value="семейный" th:selected="${selectedStatus == 'семейный'}">Семейный</option>
+                            <option value="вип" th:selected="${selectedStatus == 'вип'}">Вип</option>
+                            <option value="бизнес" th:selected="${selectedStatus == 'бизнес'}">Бизнес</option>
+                        </select>
+                    </div>
+                    <div th:each="amenity : ${amenities}" class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" th:id="'amenity-' + ${amenity}" th:name="amenities" th:value="${amenity}">
+                            <label class="form-check-label" th:for="'amenity-' + ${amenity}" th:text="${#strings.capitalize(amenity)}"></label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Фильтр</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <h1 class="text-center mb-4">Комнаты</h1>
+            <div th:if="${isInitialLoad}" class="text-center alert alert-info">
+                <p>Пожалуйста, выберите страну и город, чтобы найти доступные комнаты.</p>
+            </div>
+            <div th:if="${!isInitialLoad and #lists.isEmpty(rooms)}" class="text-center alert alert-warning">
+                <p>По вашему запросу ничего не найдено. Попробуйте изменить критерии фильтра.</p>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-4" th:each="room : ${rooms}">
+                    <div class="card room-card h-100">
+                        <img th:src="@{/images/{id}(id=${room.previewImageId})}" class="card-img-top" alt="Room Image">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">Комната №<span th:text="${room.roomNumber}"></span></h5>
+                            <p class="card-text">
+                                <strong>Цена: </strong><span th:text="${room.pricePerNight}"></span> USD/ночь<br>
+                                <strong>Тип: </strong><span th:text="${room.roomType}"></span><br>
+                                <strong>Кровать: </strong><span th:text="${room.bedCount}"></span><br>
+                            </p>
+                            <div class="room-amenities">
+                                <strong>Удобства:</strong>
+                                <ul>
+                                    <li th:each="amenity : ${room.amenities}" th:text="${amenity.name}"></li>
+                                </ul>
+                            </div>
+                            <a th:href="@{/rooms/user/{id}(id=${room.roomId})}" class="btn btn-primary w-100 mt-auto">Подробнее</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener("DOMContentLoaded", function () {
+        const countrySelect = document.getElementById('country');
+        const citySelect = document.getElementById('city');
+        const selectedCityId = /*[[${selectedCityId}]]*/ null;
+
+        function fetchCities(countryId, cityToSelect) {
+            if (!countryId) {
+                citySelect.innerHTML = '<option value="">Сначала выберите страну</option>';
+                citySelect.disabled = true;
+                return;
+            }
+
+            citySelect.innerHTML = '<option value="">Загрузка...</option>';
+            citySelect.disabled = true;
+
+            fetch(`/api/cities/${countryId}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(cities => {
+                    citySelect.innerHTML = '<option value="">Выберите город</option>';
+                    cities.forEach(city => {
+                        const option = document.createElement('option');
+                        option.value = city.id;
+                        option.textContent = city.name;
+                        if (city.id == cityToSelect) {
+                            option.selected = true;
+                        }
+                        citySelect.appendChild(option);
+                    });
+                    citySelect.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Ошибка при загрузке городов:', error);
+                    citySelect.innerHTML = '<option value="">Ошибка загрузки</option>';
+                });
+        }
+
+        if (countrySelect.value) {
+            fetchCities(countrySelect.value, selectedCityId);
+        }
+
+        countrySelect.addEventListener('change', function () {
+            fetchCities(this.value, null);
+        });
+    });
+    /*]]>*/
+</script>
+</body>
+</html>

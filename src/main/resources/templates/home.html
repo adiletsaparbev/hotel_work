@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Каскадный фильтр</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<h2>Выбор страны, города и номеров</h2>
+
+<label for="country">Страна:</label>
+<select id="country">
+    <option value="">-- Выберите страну --</option>
+    <th:block th:each="country : ${countries}">
+        <option th:value="${country.id}" th:text="${country.name}"></option>
+    </th:block>
+</select>
+
+<br><br>
+
+<label for="city">Город:</label>
+<select id="city" disabled>
+    <option value="">-- Сначала выберите страну --</option>
+</select>
+
+<br><br>
+
+<div id="rooms">
+    <!-- Здесь будут выводиться номера -->
+</div>
+
+<script>
+    $('#country').on('change', function () {
+        var countryId = $(this).val();
+        if (countryId) {
+            $.get('/cities', {countryId: countryId}, function (data) {
+                $('#city').empty().append('<option value="">-- Выберите город --</option>');
+                data.forEach(function (city) {
+                    $('#city').append('<option value="' + city.id + '">' + city.name + '</option>');
+                });
+                $('#city').prop('disabled', false);
+            });
+        } else {
+            $('#city').empty().append('<option value="">-- Сначала выберите страну --</option>').prop('disabled', true);
+            $('#rooms').empty();
+        }
+    });
+
+    $('#city').on('change', function () {
+        var cityId = $(this).val();
+        if (cityId) {
+            $.get('/rooms', {cityId: cityId}, function (data) {
+                var html = '<h3>Номера отелей:</h3><ul>';
+                data.forEach(function (room) {
+                    html += '<li>Отель: ' + room.hotelNumber + ' — Комната: ' + room.roomNumber + '</li>';
+                });
+                html += '</ul>';
+                $('#rooms').html(html);
+            });
+        } else {
+            $('#rooms').empty();
+        }
+    });
+</script>
+</body>
+</html>

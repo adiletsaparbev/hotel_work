@@ -1,0 +1,204 @@
+:root {
+            --cell-width: 45px;
+            --first-column-width: 120px;
+            --row-height: 50px;
+        }
+
+        .booking-chart-container {
+            overflow-x: auto;
+        }
+
+        .booking-chart {
+            table-layout: fixed;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .booking-chart th,
+        .booking-chart td {
+            border: 1px solid #dee2e6;
+            text-align: center;
+            padding: 0;
+            height: var(--row-height);
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .booking-chart th:first-child,
+        .booking-chart td.room-number-cell {
+            width: var(--first-column-width);
+            min-width: var(--first-column-width);
+            position: sticky;
+            left: 0;
+            background-color: white;
+            z-index: 10;
+            padding: 4px;
+            line-height: 1.2;
+        }
+
+        .room-number-main {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .room-number-sub {
+            font-size: 11px;
+            color: #6c757d;
+        }
+
+        .booking-chart th,
+        .day-cell {
+            width: var(--cell-width);
+            min-width: var(--cell-width);
+        }
+
+        .today {
+            background-color: #fffbdd !important;
+            border: 1px solid #ffc107;
+        }
+
+        .room-row {
+            position: relative;
+        }
+
+        .bars-container-cell {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+
+        .day-cell {
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            height: var(--row-height);
+        }
+
+        a.booking-link {
+            text-decoration: none;
+        }
+
+        .booking-bar {
+            position: absolute;
+            top: 5px;
+            height: calc(var(--row-height) - 10px);
+            color: white;
+            font-size: 13px;
+            padding: 0 8px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            border: 1px solid rgba(0,0,0,0.3);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            cursor: pointer;
+            z-index: 5;
+            transition: filter 0.2s ease;
+            pointer-events: auto;
+        }
+
+        a.booking-link:hover .booking-bar {
+            filter: brightness(1.15);
+        }
+
+        .booking-bar.paid {
+            background-color: #0d6efd;
+            border-color: #0a58ca;
+        }
+
+        .booking-bar.pending {
+            background-color: #ffc107;
+            border-color: #d39e00;
+            color: #343a40;
+        }
+        /* ... (ваш существующий CSS код) ... */
+
+        /* ✅ НОВЫЕ СТИЛИ: для блока сводки по номерному фонду */
+        .room-status-panel {
+            max-width: 350px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .panel-title {
+            font-weight: 500;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .tag {
+            background-color: #00bcd4;
+            color: white;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .panel-body {
+            padding: 5px 15px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            font-size: 15px;
+            color: #444;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .count-badge {
+            font-weight: bold;
+            font-size: 14px;
+            min-width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 5px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .count-badge.red {
+            background-color: #ffebee;
+            border-color: #ffcdd2;
+            color: #c62828;
+        }
+
+        .count-badge.gray {
+            background-color: #f5f5f5;
+            border-color: #e0e0e0;
+            color: #616161;
+        }
+
+        .count-badge.blue {
+            background-color: #e3f2fd;
+            border-color: #bbdefb;
+            color: #1565c0;
+        }
