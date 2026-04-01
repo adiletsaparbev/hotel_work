@@ -5,19 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rooms List</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css">
     <style>
         body { background-color: #f9f9f9; }
         h1, h5 { color: #003366; }
         .btn-primary { background-color: #003366; border-color: #003366; }
         .btn-primary:hover { background-color: #00509e; border-color: #00509e; }
         .filter-container { background-color: #ffffff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
-        .card.room-card { border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color: #ffffff; }
         .card.room-card .card-body { background-color: #f1f1f1; }
         .card.room-card h5 { color: #cc0000; }
         .room-amenities { font-size: 0.9rem; color: #666; }
         .room-card img { height: 200px; object-fit: cover; border-radius: 10px 10px 0 0; }
         footer { background-color: #003366; color: #ffffff; padding: 10px 0; text-align: center; margin-top: 20px; }
+        .spinner-border { display: none; }
     </style>
 </head>
 <body class="bg-light">
@@ -31,49 +30,50 @@
                 <form id="filterForm" method="post" th:action="@{/}">
                     <div class="mb-3">
                         <label for="country" class="form-label">Страна:</label>
-                        <select class="form-select" id="country" name="countryId">
+                        <select class="form-select" id="country" name="countryId" required>
                             <option value="">Выберите страну</option>
                             <option th:each="country : ${countries}"
                                     th:value="${country.id}"
-                                    th:text="${country.name}"
-                                    th:selected="${country.id == selectedCountryId}"></option>
+                                    th:text="${country.name}"></option>
                         </select>
                     </div>
 
                     <div class="mb-3">
                         <label for="city" class="form-label">Город:</label>
-                        <select class="form-select" id="city" name="cityId" required>
                             <option value="">Сначала выберите страну</option>
                         </select>
+                        <div class="spinner-border text-primary mt-2" id="cityLoader" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
                     </div>
 
                     <div class="mb-3">
                         <label for="minPrice" class="form-label">Мин. цена:</label>
-                        <input type="number" class="form-control" id="minPrice" name="minPrice" placeholder="От" th:value="${minPrice}">
+                        <input type="number" class="form-control" id="minPrice" name="minPrice" placeholder="От" min="0">
                     </div>
                     <div class="mb-3">
                         <label for="maxPrice" class="form-label">Макс. цена:</label>
-                        <input type="number" class="form-control" id="maxPrice" name="maxPrice" placeholder="До" th:value="${maxPrice}">
+                        <input type="number" class="form-control" id="maxPrice" name="maxPrice" placeholder="До" min="0">
                     </div>
                     <div class="mb-3">
                         <label for="bedCount" class="form-label">Количество кроватей:</label>
                         <select class="form-select" id="bedCount" name="bedCount">
                             <option value="">Любое</option>
-                            <option value="1" th:selected="${selectedBedCount != null and selectedBedCount == 1}">1</option>
-                            <option value="2" th:selected="${selectedBedCount != null and selectedBedCount == 2}">2</option>
-                            <option value="3" th:selected="${selectedBedCount != null and selectedBedCount == 3}">3</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
                         </select>
                     </div>
                     <div class="mb-3">
                         <label for="status" class="form-label">Тип номера:</label>
                         <select class="form-select" id="status" name="status">
                             <option value="">Любой</option>
-                            <option value="стандарт" th:selected="${selectedStatus == 'стандарт'}">Стандарт</option>
-                            <option value="люкс" th:selected="${selectedStatus == 'люкс'}">Люкс</option>
-                            <option value="эконом" th:selected="${selectedStatus == 'эконом'}">Эконом</option>
-                            <option value="семейный" th:selected="${selectedStatus == 'семейный'}">Семейный</option>
-                            <option value="вип" th:selected="${selectedStatus == 'вип'}">Вип</option>
-                            <option value="бизнес" th:selected="${selectedStatus == 'бизнес'}">Бизнес</option>
+                            <option value="стандарт">Стандарт</option>
+                            <option value="люкс">Люкс</option>
+                            <option value="эконом">Эконом</option>
+                            <option value="семейный">Семейный</option>
+                            <option value="вип">Вип</option>
+                            <option value="бизнес">Бизнес</option>
                         </select>
                     </div>
                     <div th:each="amenity : ${amenities}" class="mb-3">
@@ -124,10 +124,10 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script th:inline="javascript">
-    /*<![CDATA[*/
     document.addEventListener("DOMContentLoaded", function () {
         const countrySelect = document.getElementById('country');
         const citySelect = document.getElementById('city');
+        const cityLoader = document.getElementById('cityLoader');
         const selectedCityId = /*[[${selectedCityId}]]*/ null;
 
         function fetchCities(countryId, cityToSelect) {
@@ -137,6 +137,7 @@
                 return;
             }
 
+            cityLoader.style.display = 'inline-block';
             citySelect.innerHTML = '<option value="">Загрузка...</option>';
             citySelect.disabled = true;
 
@@ -161,6 +162,9 @@
                 .catch(error => {
                     console.error('Ошибка при загрузке городов:', error);
                     citySelect.innerHTML = '<option value="">Ошибка загрузки</option>';
+                })
+                .finally(() => {
+                    cityLoader.style.display = 'none';
                 });
         }
 
@@ -172,7 +176,6 @@
             fetchCities(this.value, null);
         });
     });
-    /*]]>*/
 </script>
 </body>
 </html>

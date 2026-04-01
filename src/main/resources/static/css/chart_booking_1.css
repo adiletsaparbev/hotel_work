@@ -1,0 +1,235 @@
+
+:root {
+  --cell-width: 42px;
+  --row-height: 36px;
+  --room-column-width: 120px;
+  --header-height: 64px;
+}
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  background-color: #fafafa;
+  margin: 20px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.nav {
+  text-align: center;
+  margin-bottom: 15px;
+}
+.nav .btn {
+  display: inline-block;
+  padding: 6px 12px;
+  margin: 0 5px;
+  background: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: 0.2s;
+}
+.nav .btn:hover {
+  background: #0056b3;
+}
+
+/* --- Таблица --- */
+.table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+/* Этот контейнер нужен, чтобы overlay двигался вместе с таблицей */
+.table-inner {
+  position: relative;
+  display: inline-block;
+}
+
+table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: max-content;
+}
+
+th,
+td {
+  border: 1px solid #ccc;
+  text-align: center;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+thead th {
+  background-color: #f8f8f8;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 32px;
+}
+
+.room-header {
+  position: sticky;
+  left: 0;
+  background-color: #f2f2f2;
+  z-index: 3;
+  font-weight: bold;
+  width: var(--room-column-width);
+  min-width: var(--room-column-width);
+  max-width: var(--room-column-width);
+}
+
+thead th:not(.room-header) {
+  width: var(--cell-width);
+  min-width: var(--cell-width);
+  max-width: var(--cell-width);
+}
+
+.day-name {
+  font-size: 12px;
+  color: #666;
+}
+.day-num {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.day-grid-cell {
+  width: var(--cell-width);
+  height: var(--row-height);
+  background-color: #fff;
+}
+.today {
+  background-color: #746afa !important;
+}
+.sunday {
+  background-color: #fa5e5efa !important;
+}
+
+/* --- Overlay --- */
+.bars-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+}
+
+/* --- Полосы бронирования --- */
+.booking-bar {
+  position: absolute;
+  height: 26px;
+  border-radius: 4px;
+  box-sizing: border-box;
+  padding: 3px 6px;
+  font-size: 12px;
+  line-height: 18px;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  pointer-events: auto;
+}
+.booking-bar:hover {
+  opacity: 0.85;
+}
+.booking-bar.unknown {
+  background-color: #b0b0b0;
+  border: 1px solid #999;
+  color: white;
+}
+
+.booking-bar.confirmed {
+  background-color: #28a745;
+  border: 1px solid #1e7e34;
+}
+.booking-bar.pending {
+  background-color: #ffc107;
+  color: #333;
+  border: 1px solid #d39e00;
+}
+
+.booking-bar.cancelled {
+  background-color: #ff0202;
+  color: #333;
+  border: 1px solid #d39e00;
+}
+
+.booking-bar.paid {
+  background-color: #007bff;
+  border: 1px solid #0056b3;
+}
+
+
+
+
+ .filter-controls {
+      display: flex; /* Используем flexbox для компоновки */
+      flex-wrap: wrap; /* Разрешаем перенос групп */
+      justify-content: flex-start; /* Выравнивание по левому краю */
+      align-items: flex-start; /* Выравнивание групп по верху */
+      gap: 20px; /* Отступ между группами фильтров */
+      text-align: left; /* Сбрасываем text-align: center */
+      margin-bottom: 20px;
+      background: #fdfdfd;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .filter-group {
+      padding: 5px;
+      min-width: 150px; /* Минимальная ширина для группы */
+    }
+
+    .filter-group h4 {
+      margin: 0 0 8px 0;
+      font-size: 15px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 4px;
+    }
+
+    .filter-option {
+      display: block; /* Каждый чекбокс на новой строке */
+      margin-bottom: 4px;
+    }
+
+    .filter-option label {
+      margin-left: 5px;
+      cursor: pointer;
+      font-weight: normal;
+    }
+
+    .filter-option input {
+      cursor: pointer;
+      vertical-align: middle; /* Выравниваем чекбокс и текст */
+    }
+
+    .filter-controls button {
+      padding: 8px 12px;
+      margin-left: auto; /* Прижимаем кнопку "Сбросить" вправо */
+      align-self: flex-end; /* Выравниваем ее по низу контейнера */
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: #6c757d;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .filter-controls button:hover {
+      background: #5a6268;
+    }
+
+
+
