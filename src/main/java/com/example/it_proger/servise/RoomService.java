@@ -65,6 +65,13 @@ public class RoomService {
         return image;
     }
 
+    public List<Room> getAllRooms() {
+        Room room = new Room();
+        enum RoomType {
+            SINGLE, DOUBLE, SUITE
+        }
+        return roomRepository.findAll();
+    }
     public List<String> getRoomTypes() {
         return roomRepository.findDistinctRoomType();
     }

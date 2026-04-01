@@ -1,0 +1,140 @@
+/* Переменные для удобной настройки размеров */
+:root {
+    --cell-width: 50px;
+    --first-column-width: 120px;
+    --row-height: 55px;
+    --booking-color-confirmed: #0d6efd; /* Синий */
+    --booking-color-pending: #ffc107;   /* Желтый */
+    --booking-color-cancelled: #6c757d; /* Серый */
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.booking-chart-container {
+    overflow-x: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+}
+
+.booking-chart {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed;
+}
+
+/* --- Стили для заголовков таблицы --- */
+.booking-chart th {
+    border: 1px solid #dee2e6;
+    text-align: center;
+    vertical-align: middle;
+    background-color: #f8f9fa;
+    padding: 8px 4px;
+    white-space: nowrap;
+}
+
+.month-header {
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.day-header {
+    min-width: var(--cell-width);
+    width: var(--cell-width);
+    font-weight: 400;
+    font-size: 14px;
+}
+
+/* --- Стили для "прилипающей" левой колонки с номерами --- */
+.room-header-cell,
+.room-number-cell {
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    background-color: #fff;
+}
+
+.room-number-cell {
+    width: var(--first-column-width);
+    min-width: var(--first-column-width);
+    border: 1px solid #dee2e6;
+    padding: 4px;
+    line-height: 1.2;
+    text-align: left;
+    font-weight: bold;
+}
+
+.room-number-main { font-size: 16px; }
+.room-number-sub { font-size: 11px; color: #6c757d; font-weight: normal; }
+
+/* --- Стили для ячеек и полос бронирования --- */
+.day-grid-cell {
+    flex-grow: 1;
+    border-right: 1px solid #f0f0f0;
+    height: 100%;
+}
+.day-grid-cell:last-child {
+    border-right: none;
+}
+
+/* Подсветка сегодняшнего дня в сетке и в заголовке */
+.today {
+    background-color: #fffbdd !important;
+}
+
+/* Контейнер для полос, позиционируется абсолютно над сеткой */
+.bars-container-cell {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none; /* Позволяет кликать "сквозь" себя */
+}
+
+a.booking-link {
+    text-decoration: none;
+}
+
+/* Стиль для самой полосы бронирования */
+.booking-bar {
+    position: absolute;
+    top: 5px;
+    height: calc(var(--row-height) - 10px);
+    color: white;
+    font-size: 13px;
+    padding: 0 8px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    border: 1px solid rgba(0,0,0,0.3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    z-index: 5;
+    transition: filter 0.2s ease;
+    pointer-events: auto; /* Возвращаем возможность кликать на полосу */
+}
+
+a.booking-link:hover .booking-bar {
+    filter: brightness(1.15); /* Эффект при наведении */
+}
+
+/* Цвета в зависимости от статуса брони */
+.booking-bar.confirmed {
+    background-color: var(--booking-color-confirmed);
+    border-color: #0a58ca;
+}
+.booking-bar.pending {
+    background-color: var(--booking-color-pending);
+    border-color: #d39e00;
+    color: #333;
+}
+.booking-bar.cancelled {
+    background-color: var(--booking-color-cancelled);
+    border-color: #5c636a;
+    text-decoration: line-through;
+}

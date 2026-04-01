@@ -99,7 +99,7 @@ public class RoomController {
 //    }
 
 
-
+// sjfdidhafslnvpgurtipghnw[vogiowrbeirgbtie4bovgttqrigervu
     // удаление комнат
     @PostMapping("/delete/{hotelId}/{id}")
     public String deleteRoom(@PathVariable Integer hotelId,
