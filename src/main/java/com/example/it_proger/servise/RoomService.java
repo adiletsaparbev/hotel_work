@@ -55,6 +55,13 @@ public class RoomService {
         roomRepository.save(room);
     }
 
+    /**
+     * Create an Image entity from the provided multipart file.
+     *
+     * @param file the uploaded multipart file to convert into an Image
+     * @return an Image populated with the file's name, original filename, content type, size, and byte content
+     * @throws IOException if reading the file's bytes fails
+     */
     private Image toImageEntity(MultipartFile file) throws IOException{
         Image image = new Image();
         image.setName(file.getName());
@@ -65,6 +72,11 @@ public class RoomService {
         return image;
     }
 
+    /**
+     * Retrieve all rooms from the repository.
+     *
+     * @return a list of all Room entities
+     */
     public List<Room> getAllRooms() {
         Room room = new Room();
         enum RoomType {
@@ -72,6 +84,11 @@ public class RoomService {
         }
         return roomRepository.findAll();
     }
+    /**
+     * Retrieve the distinct room type names present in the repository.
+     *
+     * @return a list of unique room type names; an empty list if none are found
+     */
     public List<String> getRoomTypes() {
         return roomRepository.findDistinctRoomType();
     }

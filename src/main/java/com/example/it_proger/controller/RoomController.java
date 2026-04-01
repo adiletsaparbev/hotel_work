@@ -100,7 +100,14 @@ public class RoomController {
 
 
 // sjfdidhafslnvpgurtipghnw[vogiowrbeirgbtie4bovgttqrigervu
-    // удаление комнат
+    /**
+     * Delete a room by its id and, if the parent hotel exists, redirect to that hotel's info page.
+     *
+     * @param hotelId the identifier of the hotel that contains the room
+     * @param id the identifier of the room to delete
+     * @param model the MVC model used to add attributes shown after deletion
+     * @return the redirect to the hotel's info page when the hotel exists; otherwise the "main" view name
+     */
     @PostMapping("/delete/{hotelId}/{id}")
     public String deleteRoom(@PathVariable Integer hotelId,
             @PathVariable int id, Model model) {
